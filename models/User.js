@@ -38,9 +38,14 @@ const UserSchema = new mongoose.Schema({
         required: true, 
         match: [/^\d{10,15}$/, 'Please provide a valid phone number'], 
     },
+    company : {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Company", // Reference
+        default : null,
+    },
     birthday :{ type :String },
     active : {type: String, enum : ["0","1"], default : "1" },
-    file : {type: String, },
+    file : {type: String,  default : "" },
     date: { type: Date, default: Date.now },
 })
 
