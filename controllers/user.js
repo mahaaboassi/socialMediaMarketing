@@ -215,11 +215,12 @@ const UpdateUser = async (req,res) =>{
                 companyId = null
             }
         }
-        let filePath = dataExisting.file;
+
         if (req.file) {
-            deleteFile(filePath, "user"); // delete old file
+            deleteFile(dataExisting.file, "user"); // delete old file
             const category = req.category || "user";
-            filePath = `/uploads/${category}/${req.file.filename}`;
+            dataExisting.file = `/uploads/${category}/${req.file.filename}`;
+    
         }
         let activeValue =  dataExisting.active
         if(active && ["1", '0'].includes(active)) activeValue = active
@@ -236,7 +237,7 @@ const UpdateUser = async (req,res) =>{
                 active : activeValue,
                 role : roleValue ,
                 company : companyId ,
-                file: filePath,
+                file: dataExisting.file,
                 email : dataExisting.email
             },
             { new: true }  // Ensure the updated document is returned

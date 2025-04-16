@@ -1,8 +1,8 @@
 const { deleteFile } = require("../middleware/upload");
-const Company = require("../models/Company");
+const Type = require("../models/Type");
 
 
-const AddComapny = async (req,res) => {
+const AddType = async (req,res) => {
     const { name, description } = req.body
     try{
         if(!name ){
@@ -17,31 +17,22 @@ const AddComapny = async (req,res) => {
             name : name ,
             description : description || ""
         }
-        if(!req.file) return res.status(400).json({
-            error: 1,
-            data : [],
-            message: "File field is required.",
-            status : 400
-          });
+
         const  category = req.category
         data["file"] =  req.file ? `/uploads/${category}/${req.file.filename}` : null;
-        const company = new Company(data)
-        await company.save()
+        const type = new Type(data)
+        await type.save()
 
         res.status(200).json({
             error : 0,
             data : {  
-                id: company._id,
-                name : company.name ,
-                description : company.description ,
-                file :company.file || ""
+                id: type._id,
+                name : type.name ,
+                description : type.description ,
+                file : type.file || ""
             },
             message : "company Added successfully!"
         });
-        
-        
-        
-          
 
     } catch(err) {
         console.log(err);
@@ -53,7 +44,7 @@ const AddComapny = async (req,res) => {
         
     }
 }
-const UpdateComapny = async (req,res) => {
+const UpdateType = async (req,res) => {
     const { id } = req.params; 
     const { name, description  } = req.body
 
@@ -63,36 +54,36 @@ const UpdateComapny = async (req,res) => {
             return res.status(400).json({
                 error: 1,
                 data: [],
-                message: "Company ID is required.",
+                message: "Type ID is required.",
                 status: 400
             });
         }
-        const dataExisting = await Company.findById(id);
+        const dataExisting = await Type.findById(id);
 
         if (!dataExisting) {
         return res.status(404).json({
             error: 1,
-            message: "Company not found",
+            message: "Type not found",
             data: [],
         });
         }
         if (req.file) {
-            deleteFile(dataExisting.file, "company")
+            deleteFile(dataExisting.file, "type")
             const  category = req.category
             dataExisting["file"] =  req.file ? `/uploads/${category}/${req.file.filename}` : null;
         }
-
-        const dataToUpdate = await Company.findOneAndUpdate(
-            { _id: id },  // Find the document by ID
+        const dataToUpdate = await Type.findOneAndUpdate(
+            { _id: id },  
             {
                 name : name || dataExisting.name ,
                 description :  description || dataExisting.description ,
                 file : dataExisting.file
             },
-            { new: true }  // Ensure the updated document is returned
+            { new: true }  
         );
-
         
+
+       
 
 
         
@@ -104,7 +95,7 @@ const UpdateComapny = async (req,res) => {
                 description : dataToUpdate.description ,
                 file : dataToUpdate.file
            },
-            message: "Company updated successfully."
+            message: "Type updated successfully."
         });
         
     } catch (error) {
@@ -118,9 +109,9 @@ const UpdateComapny = async (req,res) => {
         });
     }
 }
-const ListCompanies = async (req,res) =>{
+const ListTypes = async (req,res) =>{
     try{
-        const data = await Company.find()
+        const data = await Type.find()
 
         if (!data || data.data === 0) {
             return res.status(404).json({
@@ -145,15 +136,15 @@ const ListCompanies = async (req,res) =>{
         })      
     }
 }
-const GetOneCompany = async (req,res) =>{
+const GetOneType = async (req,res) =>{
     const { id } = req.params;
     try{
-        const existingData = await Company.findById(id);
+        const existingData = await Type.findById(id);
 
         if (!existingData) {
         return res.status(404).json({
             error: 1,
-            message: "Company not found",
+            message: "Type not found",
             data: [],
         });
         }
@@ -172,7 +163,7 @@ const GetOneCompany = async (req,res) =>{
         })      
     }
 }
-const DeleteCompany = async(req, res) =>{
+const DeleteType = async(req, res) =>{
     const { id } = req.params
     try{
         if(!id){
@@ -183,20 +174,22 @@ const DeleteCompany = async(req, res) =>{
                 status: 400
             });
         }
-        const dataExist = await Company.findByIdAndDelete(id)
+
+        const dataExist = await Type.findByIdAndDelete(id)
+
         if (!dataExist) {
             return res.status(404).json({
                 error: 1,
                 data: [],
-                message: "Comapny not found.",
+                message: "Type not found.",
                 status: 404
             });
         }
-        deleteFile(dataExist.file, "company")
+        deleteFile(dataExist.file, "type")
         res.status(200).json({
             error: 0,
             data: [],
-            message: "Company deleted successfully."
+            message: "Type deleted successfully."
         });
     }catch(err) {
         console.error(err);
@@ -210,10 +203,10 @@ const DeleteCompany = async(req, res) =>{
 
 
 module.exports = {
-         AddComapny ,
-        DeleteCompany ,
-        ListCompanies ,
-        UpdateComapny ,
-        GetOneCompany
+        AddType ,
+        DeleteType ,
+        ListTypes ,
+        UpdateType ,
+        GetOneType
 
     }

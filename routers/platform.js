@@ -6,6 +6,7 @@ const platformRouter = express.Router()
 const { AddUser, ListUsers, GetOneUser, DeleteUser, UpdateUser } = require("../controllers/user")
 const { AddComapny, DeleteCompany, ListCompanies, GetOneCompany, UpdateComapny } = require("../controllers/company")
 const { authenticate, authorizeAdmin, authorizeDeveloper, authorizeClient } = require("../middleware/auth")
+const { AddType, ListTypes, DeleteType, UpdateType, GetOneType } = require("../controllers/type")
 
 // Apis
 
@@ -30,6 +31,17 @@ platformRouter.put("/user/:id", authenticate, authorizeAdmin, setCategory("user"
 platformRouter.get("/user/getOne/:id", authenticate, authorizeAdmin, GetOneUser)
 platformRouter.get("/user/getOne", authenticate, authorizeAdmin, (req, res) => {
     res.status(400).json({ error: 1, data:[], message: "Please provide a user ID." });
+  });
+
+// ******** Type *************
+// For Admin
+platformRouter.post("/type/add", authenticate, authorizeAdmin, setCategory("type"), upload.single("file"), AddType)
+platformRouter.get("/type", authenticate, authorizeAdmin, ListTypes)
+platformRouter.delete("/type/:id", authenticate, authorizeAdmin, DeleteType)
+platformRouter.put("/type/:id", authenticate, authorizeAdmin, setCategory("type"), upload.single("file"), UpdateType)
+platformRouter.get("/type/getOne/:id", authenticate, authorizeAdmin, GetOneType)
+platformRouter.get("/type/getOne", authenticate, authorizeAdmin, (req, res) => {
+    res.status(400).json({ error: 1, data:[], message: "Please provide a type ID." });
   });
 
 // Marked Days

@@ -7,12 +7,13 @@ const TypeSchema = new mongoose.Schema({
     },
     description :{
         type : String,
-        required : true,
+        default: ""
     },
     file :{
         type : String, 
         default : ""
-    }
+    },
+    date :{ type: Date, default: Date.now },
 })
 
 module.exports = mongoose.model("Type", TypeSchema)
