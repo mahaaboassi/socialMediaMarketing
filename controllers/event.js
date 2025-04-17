@@ -1,35 +1,24 @@
 const { deleteFile } = require("../middleware/upload");
-const Ads = require("../models/Ads");
+const Events = require("../models/Events");
 const User = require("../models/User");
 
-const AddAds = async (req,res) => {
-    const { ads_type, objective, visuals, target_audience ,ads_copy, cta } = req.body
+const AddEvent = async (req,res) => {
+    const { title, description } = req.body
     try{
-        if(!ads_type   ){
+        if(!title ){
             return res.status(400).json({
                 error: 1,
                 data : [],
-                message: "Ads Type field is required.",
+                message: "Title field is required.",
                 status : 400
               });
         }
-        if(!objective  ){
-            return res.status(400).json({
-                error: 1,
-                data : [],
-                message: "Objective field is required.",
-                status : 400
-              });
-        }
+
         const user = await User.findById(req.user.id)
 
         const data = { 
-            ads_type : ads_type,
-            objective : objective,
-            visuals : visuals || "",
-            target_audience : target_audience || "",
-            ads_copy : ads_copy || "",
-            cta : cta || "",
+            title : title,
+            description : description || "",
             created_by : user,
             last_updated_date : "",
             last_updated_by : null,
@@ -39,13 +28,13 @@ const AddAds = async (req,res) => {
 
         const  category = req.category
         data["file"] =  req.file ? `/uploads/${category}/${req.file.filename}` : "";
-        const newData = new Ads(data)
+        const newData = new Events(data)
         await newData.save()
 
         res.status(200).json({
             error : 0,
             data : newData,
-            message : "Ads Added successfully!"
+            message : "Event Added successfully!"
         });
         
         
@@ -62,9 +51,9 @@ const AddAds = async (req,res) => {
         
     }
 }
-const UpdateAds = async (req,res) => {
+const UpdateEvent = async (req,res) => {
     const { id } = req.params; 
-    const { ads_type, objective, visuals, target_audience ,ads_copy, cta} = req.body
+    const { title, description } = req.body
 
     try {
         // Check if the id is provided
@@ -72,24 +61,24 @@ const UpdateAds = async (req,res) => {
             return res.status(400).json({
                 error: 1,
                 data: [],
-                message: "Ads ID is required.",
+                message: "Event ID is required.",
                 status: 400
             });
         }
-        const dataExisting = await Ads.findById(id);
+        const dataExisting = await Events.findById(id);
 
         if (!dataExisting) {
         return res.status(404).json({
             error: 1,
-            message: "Ads not found",
+            message: "Event not found",
             data: [],
         });
         }
 
         let updates = []
 
-        const inputValues = { ads_type, objective, visuals, target_audience, ads_copy, cta };
-        const fieldsToUpdate = ["ads_type", "objective",  "visuals", "target_audience",  "ads_copy", "cta"];
+        const inputValues = { title, description};
+        const fieldsToUpdate = ["title", "description"];
 
         fieldsToUpdate.forEach((key) => {
             const newValue = inputValues[key];
@@ -104,7 +93,7 @@ const UpdateAds = async (req,res) => {
         });
 
         if(req.file) {
-            deleteFile(dataExisting.file, "ads")
+            deleteFile(dataExisting.file, "event")
             const  category = req.category
             updates.unshift({
                 key : "file",
@@ -149,15 +138,11 @@ const UpdateAds = async (req,res) => {
         }
 
 
-        await Ads.findOneAndUpdate(
+        await Events.findOneAndUpdate(
             { _id: id },  // Find the document by ID
             {
-                ads_type : dataExisting.ads_type,
-                objective : dataExisting.objective,
-                visuals : dataExisting.visuals ,
-                target_audience : dataExisting.target_audience ,
-                ads_copy : dataExisting.ads_copy,
-                cta : dataExisting.cta,
+                title : dataExisting.title,
+                description : dataExisting.description,
                 created_by : dataExisting.created_by,
                 last_updated_date : new Date().toISOString(),
                 last_updated_by : user,
@@ -167,7 +152,7 @@ const UpdateAds = async (req,res) => {
             { new: true }  // Ensure the updated document is returned
         );
 
-        const data = await Ads.findById(id).populate("created_by")
+        const data = await Events.findById(id).populate("created_by")
         .populate("last_updated_by")   
 
 
@@ -176,7 +161,7 @@ const UpdateAds = async (req,res) => {
         res.status(200).json({
             error: 0,
             data: data,
-            message: "Ads updated successfully."
+            message: "Event updated successfully."
         });
         
     } catch (error) {
@@ -190,9 +175,9 @@ const UpdateAds = async (req,res) => {
         });
     }
 }
-const ListAds = async (req,res) =>{
+const ListEvents = async (req,res) =>{
     try{
-        const data = await Ads.find().populate("created_by")
+        const data = await Events.find().populate("created_by")
         .populate("last_updated_by")
 
         if (!data || data.data === 0) {
@@ -218,16 +203,16 @@ const ListAds = async (req,res) =>{
         })      
     }
 }
-const GetOneAds = async (req,res) =>{
+const GetOneEvent = async (req,res) =>{
     const { id } = req.params;
     try{
-        const existingData = await Ads.findById(id).populate("created_by")
+        const existingData = await Events.findById(id).populate("created_by")
         .populate("last_updated_by")
 
         if (!existingData) {
         return res.status(404).json({
             error: 1,
-            message: "Ads not found",
+            message: "Event not found",
             data: [],
         });
         }
@@ -246,7 +231,7 @@ const GetOneAds = async (req,res) =>{
         })      
     }
 }
-const DeleteAds = async(req, res) =>{
+const DeleteEvent = async(req, res) =>{
     const { id } = req.params
     try{
         if(!id){
@@ -257,23 +242,23 @@ const DeleteAds = async(req, res) =>{
                 status: 400
             });
         }
-        const dataExist = await Ads.findByIdAndDelete(id)
+        const dataExist = await Events.findByIdAndDelete(id)
 
         if (!dataExist) {
             return res.status(404).json({
                 error: 1,
                 data: [],
-                message: "Ads not found.",
+                message: "Event not found.",
                 status: 404
             });
         }
 
-        deleteFile(dataExist.file, "ads")
+        deleteFile(dataExist.file, "event")
 
         res.status(200).json({
             error: 0,
             data: [],
-            message: "Ads deleted successfully."
+            message: "Event deleted successfully."
         });
     }catch(err) {
         console.error(err);
@@ -287,9 +272,9 @@ const DeleteAds = async(req, res) =>{
 
 
 module.exports = {
-        AddAds ,
-        DeleteAds ,
-        ListAds ,
-        UpdateAds ,
-        GetOneAds
-    }
+    AddEvent ,
+    DeleteEvent ,
+    ListEvents ,
+    UpdateEvent ,
+    GetOneEvent
+}

@@ -243,7 +243,7 @@ const UpdateDay = async (req,res) => {
         }
 
 
-        const dataToUpdate = await MarkedDay.findOneAndUpdate(
+        await MarkedDay.findOneAndUpdate(
             { _id: id },  // Find the document by ID
             {
                 is_seasonal :  dataExisting.is_seasonal ,

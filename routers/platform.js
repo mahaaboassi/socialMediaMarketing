@@ -9,6 +9,8 @@ const { authenticate, authorizeAdmin, authorizeDeveloper, authorizePreventClient
 const { AddType, ListTypes, DeleteType, UpdateType, GetOneType } = require("../controllers/type")
 const { AddDay, ListDays, DeleteDay, UpdateDay, GetOneDay } = require("../controllers/markedDays")
 const { AddAds, DeleteAds, UpdateAds, ListAds, GetOneAds } = require("../controllers/ads")
+const { AddMagazine, DeleteMagazine, UpdateMagazine, ListMagazines, GetOneMagazine } = require("../controllers/magazine")
+const { AddEvent, DeleteEvent, UpdateEvent, ListEvents, GetOneEvent } = require("../controllers/event")
 
 // Apis
 
@@ -59,7 +61,7 @@ platformRouter.get("/markedDay/getOne", authenticate, (req, res) => {
   });
 
 
-// ******** MAdvertisements *************
+// ******** Advertisements *************
 // For Admin & Client
 platformRouter.post("/ads/add", authenticate, authorizePreventDeveloper, setCategory("ads"), upload.single("file"), AddAds)
 platformRouter.delete("/ads/:id", authenticate, authorizeAdmin, DeleteAds)
@@ -72,13 +74,34 @@ platformRouter.get("/ads/getOne", authenticate, (req, res) => {
   });
 
 
-// Magazine
-platformRouter.post("/magazine",()=>{})
+// ******** Magazine *************
+// For Admin & Client
+platformRouter.post("/magazine/add", authenticate, authorizePreventDeveloper, setCategory("magazine"), upload.single("file"), AddMagazine)
+platformRouter.delete("/magazine/:id", authenticate, authorizeAdmin, DeleteMagazine)
+platformRouter.put("/magazine/:id", authenticate, authorizePreventDeveloper, setCategory("magazine"), upload.single("file"), UpdateMagazine)
+// For Admin & Client & Developer
+platformRouter.get("/magazine", authenticate, ListMagazines)
+platformRouter.get("/magazine/getOne/:id", authenticate, GetOneMagazine)
+platformRouter.get("/magazine/getOne", authenticate, (req, res) => {
+    res.status(400).json({ error: 1, data:[], message: "Please provide a Magazine ID." });
+  });
 
 // Videos
 platformRouter.post("/video",()=>{})
 
-// Events
-platformRouter.post("/event",()=>{})
+
+// ******** Events *************
+// For Admin & Client
+platformRouter.post("/event/add", authenticate, authorizePreventDeveloper, setCategory("event"), upload.single("file"), AddEvent)
+platformRouter.delete("/event/:id", authenticate, authorizeAdmin, DeleteEvent)
+platformRouter.put("/event/:id", authenticate, authorizePreventDeveloper, setCategory("event"), upload.single("file"), UpdateEvent)
+// For Admin & Client & Developer
+platformRouter.get("/event", authenticate, ListEvents)
+platformRouter.get("/event/getOne/:id", authenticate, GetOneEvent)
+platformRouter.get("/event/getOne", authenticate, (req, res) => {
+    res.status(400).json({ error: 1, data:[], message: "Please provide a Event ID." });
+  });
+
+
 
 module.exports = { platformRouter}

@@ -13,7 +13,7 @@ const UpdatesInfoSchema = new mongoose.Schema({
         default : []
     }
   }, { _id: false });
-const MagazineSchema = new mongoose.Schema({
+const EventSchema = new mongoose.Schema({
     title : { type : String, required: true},
     description : { type : String, default: ""},
     file : { type : String, default: ""} ,
@@ -35,4 +35,4 @@ const MagazineSchema = new mongoose.Schema({
 
 })
 
-module.exports = mongoose.model("Magazine", MagazineSchema)
+module.exports = mongoose.model("Event", EventSchema)
