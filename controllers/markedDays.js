@@ -1,5 +1,4 @@
 const { deleteFile } = require("../middleware/upload");
-const Company = require("../models/Company");
 const MarkedDay = require("../models/MarkedDay");
 const Type = require("../models/Type");
 const User = require("../models/User");
@@ -141,12 +140,27 @@ const UpdateDay = async (req,res) => {
         }
 
         let updates = []
+        const inputValues = { text_or_reel, caption, focus, cta };
+        const fieldsToUpdate = ["text_or_reel", "caption",  "focus", "cta"];
+
+        fieldsToUpdate.forEach((key) => {
+            const newValue = inputValues[key];
+            if (newValue !== undefined && newValue && dataExisting[key] !== newValue) {
+                updates.unshift({
+                    key: key,
+                    current_value: newValue,
+                    previous_value: dataExisting[key]
+                });
+                dataExisting[key] = newValue;
+            }
+        });
         if(is_seasonal && ["0","1"].includes(is_seasonal)){
             updates.unshift({
                 key : "is_seasonal",
                 current_value : is_seasonal,
                 previous_value : dataExisting.is_seasonal
             })
+            dataExisting.is_seasonal = is_seasonal
         }
         const dayTest = /^(0?[1-9]|[12][0-9]|3[01])$/ // Matches 01–31
         const monthTest = /^(0?[1-9]|1[0-2])$/ // Matches 01–12
@@ -166,38 +180,7 @@ const UpdateDay = async (req,res) => {
             })
             dataExisting.month = month
         }
-        if(text_or_reel ){
-            updates.unshift({
-                key : "text_or_reel",
-                current_value : text_or_reel,
-                previous_value : dataExisting.text_or_reel
-            })
-            dataExisting.text_or_reel = text_or_reel
-        }
-        if(caption ){
-            updates.unshift({
-                key : "caption",
-                current_value : caption,
-                previous_value : dataExisting.caption
-            })
-            dataExisting.caption = caption
-        }
-        if(focus){
-            updates.unshift({
-                key : "focus",
-                current_value : focus,
-                previous_value : dataExisting.focus
-            })
-            dataExisting.focus = focus
-        }
-        if(cta ){
-            updates.unshift({
-                key : "cta",
-                current_value : cta,
-                previous_value : dataExisting.cta
-            })
-            dataExisting.caption = cta
-        }
+
         if(req.file) {
             deleteFile(dataExisting.file, "markedDays")
             const  category = req.category
@@ -231,10 +214,17 @@ const UpdateDay = async (req,res) => {
             dataExisting.updates_info.forEach((e,i)=>{
                 const existingDate = e.date.split('T')[0];
                 if(existingDate == new Date().toISOString().split('T')[0] ){
+                    e.updates.forEach((el,i)=>{
+                        const updatesMap = new Map(updates.map(el => [el.key, el]));
+                        if (updatesMap.has(el.key)) {
+                            e.updates[i] = updatesMap.get(el.key);
+                            updates = updates.filter(element=> element.key !=el.key)
+                        }
+                    })
                     dataExisting.updates_info[i] = {
                         by: user,
                         date: new Date().toISOString(),
-                        updates: updates
+                        updates: [...e.updates,...updates]
                     }
                 }else{
                     dataExisting.updates_info.unshift({
@@ -256,7 +246,7 @@ const UpdateDay = async (req,res) => {
         const dataToUpdate = await MarkedDay.findOneAndUpdate(
             { _id: id },  // Find the document by ID
             {
-                is_seasonal : ["0","1"].includes(is_seasonal) ? is_seasonal : dataExisting.is_seasonal ,
+                is_seasonal :  dataExisting.is_seasonal ,
                 day : dataExisting.day,
                 month : dataExisting.month,
                 year : dataExisting.year,
@@ -275,14 +265,16 @@ const UpdateDay = async (req,res) => {
             { new: true }  // Ensure the updated document is returned
         );
 
-        
+        const data = await MarkedDay.find().populate("created_by")
+        .populate("last_updated_by")
+        .populate("post_type");        
 
 
         
         // Respond with a success message
         res.status(200).json({
             error: 0,
-            data: dataToUpdate,
+            data: data,
             message: "Marked Day updated successfully."
         });
         
@@ -331,7 +323,7 @@ const GetOneDay = async (req,res) =>{
     try{
         const existingData = await MarkedDay.findById(id).populate("created_by")
         .populate("last_updated_by")
-        .populate("post_type");;
+        .populate("post_type");
 
         if (!existingData) {
         return res.status(404).json({

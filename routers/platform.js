@@ -8,6 +8,7 @@ const { AddComapny, DeleteCompany, ListCompanies, GetOneCompany, UpdateComapny }
 const { authenticate, authorizeAdmin, authorizeDeveloper, authorizePreventClient, authorizePreventDeveloper } = require("../middleware/auth")
 const { AddType, ListTypes, DeleteType, UpdateType, GetOneType } = require("../controllers/type")
 const { AddDay, ListDays, DeleteDay, UpdateDay, GetOneDay } = require("../controllers/markedDays")
+const { AddAds, DeleteAds, UpdateAds, ListAds, GetOneAds } = require("../controllers/ads")
 
 // Apis
 
@@ -48,16 +49,28 @@ platformRouter.get("/type/getOne", authenticate, authorizeAdmin, (req, res) => {
 // ******** Marked Days *************
 // For Admin & Client
 platformRouter.post("/markedDay/add", authenticate, authorizePreventDeveloper, setCategory("markedDays"), upload.single("file"), AddDay)
-platformRouter.get("/markedDay", authenticate, ListDays)
 platformRouter.delete("/markedDay/:id", authenticate, authorizeAdmin, DeleteDay)
 platformRouter.put("/markedDay/:id", authenticate, authorizePreventDeveloper, setCategory("markedDays"), upload.single("file"), UpdateDay)
+// For Admin & Client & Developer
+platformRouter.get("/markedDay", authenticate, ListDays)
 platformRouter.get("/markedDay/getOne/:id", authenticate, GetOneDay)
 platformRouter.get("/markedDay/getOne", authenticate, (req, res) => {
     res.status(400).json({ error: 1, data:[], message: "Please provide a Marked Day ID." });
   });
 
-// Advertisements
-platformRouter.post("/ads",()=>{})
+
+// ******** MAdvertisements *************
+// For Admin & Client
+platformRouter.post("/ads/add", authenticate, authorizePreventDeveloper, setCategory("ads"), upload.single("file"), AddAds)
+platformRouter.delete("/ads/:id", authenticate, authorizeAdmin, DeleteAds)
+platformRouter.put("/ads/:id", authenticate, authorizePreventDeveloper, setCategory("ads"), upload.single("file"), UpdateAds)
+// For Admin & Client & Developer
+platformRouter.get("/ads", authenticate, ListAds)
+platformRouter.get("/ads/getOne/:id", authenticate, GetOneAds)
+platformRouter.get("/ads/getOne", authenticate, (req, res) => {
+    res.status(400).json({ error: 1, data:[], message: "Please provide a Ads ID." });
+  });
+
 
 // Magazine
 platformRouter.post("/magazine",()=>{})
