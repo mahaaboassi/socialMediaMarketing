@@ -5,8 +5,9 @@ const platformRouter = express.Router()
 // Controller Files
 const { AddUser, ListUsers, GetOneUser, DeleteUser, UpdateUser } = require("../controllers/user")
 const { AddComapny, DeleteCompany, ListCompanies, GetOneCompany, UpdateComapny } = require("../controllers/company")
-const { authenticate, authorizeAdmin, authorizeDeveloper, authorizeClient } = require("../middleware/auth")
+const { authenticate, authorizeAdmin, authorizeDeveloper, authorizePreventClient, authorizePreventDeveloper } = require("../middleware/auth")
 const { AddType, ListTypes, DeleteType, UpdateType, GetOneType } = require("../controllers/type")
+const { AddDay, ListDays, DeleteDay, UpdateDay, GetOneDay } = require("../controllers/markedDays")
 
 // Apis
 
@@ -16,9 +17,9 @@ platformRouter.post("/company/add", authenticate, authorizeAdmin, setCategory("c
 platformRouter.delete("/company/:id", authenticate, authorizeAdmin, DeleteCompany)
 platformRouter.put("/company/:id", authenticate, authorizeAdmin, setCategory("company"), upload.single("file"), UpdateComapny)
 // for admin and developer roles
-platformRouter.get("/company",authenticate, authorizeClient, ListCompanies)
-platformRouter.get("/company/getOne/:id", authenticate, authorizeClient, GetOneCompany)
-platformRouter.get("/company/getOne", authenticate, authorizeClient, (req, res) => {
+platformRouter.get("/company",authenticate, authorizePreventClient, ListCompanies)
+platformRouter.get("/company/getOne/:id", authenticate, authorizePreventClient, GetOneCompany)
+platformRouter.get("/company/getOne", authenticate, authorizePreventClient, (req, res) => {
     res.status(400).json({ error: 1, data:[], message: "Please provide a company ID." });
   });
 
@@ -44,9 +45,16 @@ platformRouter.get("/type/getOne", authenticate, authorizeAdmin, (req, res) => {
     res.status(400).json({ error: 1, data:[], message: "Please provide a type ID." });
   });
 
-// Marked Days
-platformRouter.post("/markedDay",()=>{})
-
+// ******** Marked Days *************
+// For Admin & Client
+platformRouter.post("/markedDay/add", authenticate, authorizePreventDeveloper, setCategory("markedDays"), upload.single("file"), AddDay)
+platformRouter.get("/markedDay", authenticate, ListDays)
+platformRouter.delete("/markedDay/:id", authenticate, authorizeAdmin, DeleteDay)
+platformRouter.put("/markedDay/:id", authenticate, authorizePreventDeveloper, setCategory("markedDays"), upload.single("file"), UpdateDay)
+platformRouter.get("/markedDay/getOne/:id", authenticate, GetOneDay)
+platformRouter.get("/markedDay/getOne", authenticate, (req, res) => {
+    res.status(400).json({ error: 1, data:[], message: "Please provide a Marked Day ID." });
+  });
 
 // Advertisements
 platformRouter.post("/ads",()=>{})

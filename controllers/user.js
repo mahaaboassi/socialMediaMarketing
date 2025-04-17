@@ -83,11 +83,17 @@ const AddUser = async (req, res) => {
         if(birthday)  data["birthday"] = birthday
         if(role && ['admin', "developer", 'client'].includes(role)) data["role"] = role
         if(data.role == "client"){
+            if(!company) return res.status(400).json({
+                error: 1,
+                data: [],
+                message: "The company Field is required.",
+                status: 400
+            });
             const companyValue = await Company.findById(company)
             if(!companyValue) return res.status(400).json({
                 error: 1,
                 data: [],
-                message: "The company Field is required.",
+                message: "The company not found.",
                 status: 400
             });
             data.company = company

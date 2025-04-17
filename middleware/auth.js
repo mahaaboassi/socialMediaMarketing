@@ -62,7 +62,7 @@ const authorizeDeveloper = (req, res, next) => {
     req.user = decoded;
     next();
 };
-const authorizeClient = (req, res, next) => {
+const authorizePreventClient = (req, res, next) => {
     const token = req.headers.authorization && req.headers.authorization.split(" ")[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
@@ -78,4 +78,20 @@ const authorizeClient = (req, res, next) => {
     req.user = decoded;
     next();
 };
-module.exports = { authenticate, authorizeAdmin, authorizeDeveloper , authorizeClient};
+const authorizePreventDeveloper = (req, res, next) => {
+    const token = req.headers.authorization && req.headers.authorization.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Check if the user is an admin
+    if (decoded.role == 'developer') {
+        return res.status(403).json({
+            error: 1,
+            data: [],
+            message: "You do not have the necessary permissions .",
+            status: 403,
+        });
+    }
+    req.user = decoded;
+    next();
+};
+module.exports = { authenticate, authorizeAdmin, authorizeDeveloper , authorizePreventClient, authorizePreventDeveloper};
